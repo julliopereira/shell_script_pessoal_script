@@ -14,10 +14,10 @@ f_check_arg() {
 
 f_check_apps() {
     # check apps installed - mandatory
-    v_app="ping" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no $v_app app installed ... fix it and Try again !" && read next_ && clear && exit 1
-    v_app="nc" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no $v_app app installed ... fix it and Try again !" && read next_ && clear && exit 1
-    v_app="curl" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no $v_app app installed ... fix it and Try again !" && read next_ && clear && exit 1
-    v_app="whois" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no $v_app app installed ... fix it and Try again !" && read next_ && clear && exit 1
+    v_app="ping" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no - $v_app - app installed ... fix it and Try again !" && read next_ && clear && exit 1
+    #v_app="nc" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no - $v_app - app installed ... fix it and Try again !" && read next_ && clear && exit 1
+    v_app="curl" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no - $v_app - app installed ... fix it and Try again !" && read next_ && clear && exit 1
+    v_app="whois" ; [[ ! -f $(which $v_app) ]] && echo -en "\nYou have no - $v_app - app installed ... fix it and Try again !" && read next_ && clear && exit 1
 }
 
 f_check_target_alive() {
@@ -31,11 +31,68 @@ f_check_target_alive() {
     fi
 }
 
-f_check_ipinfo() {
-    :
+f_get_ipinfo() {
+    # Geo info
+    v_info=$(curl -s ipinfo.io/$1 )
+    # v_hostname=$(curl -s ipinfo.io/$1 | grep "hostname" | cut -d ":" -f 2 | tr -d ",")
+    # v_city=$(curl -s ipinfo.io/$1 |  grep "city" | cut -d ":" -f 2 | tr -d ",")
+    # v_region=$(curl -s ipinfo.io/$1 | grep "region" | cut -d ":" -f 2 | tr -d ",")
+    # v_country=$(curl -s ipinfo.io/$1 | grep "country" | cut -d ":" -f 2 | tr -d ",")
+    # v_loc=$(curl -s ipinfo.io/$1 | grep "loc" | cut -d ":" -f 2 )
+    # v_org_all=$(curl -s ipinfo.io/$1 | grep "org" | cut -d ":" -f 2 | tr -d ",")
+
+    # v_lat=$(echo $v_loc | sed 's/\"//g' | cut -d "," -f 1 )
+    # v_long=$(echo $v_loc | sed 's/\"//g' | cut -d "," -f 2 )
+
+    # v_org=$(echo $v_org_all | sed 's/\"//g' | cut -d " " -f 2-)
+    # v_org_asn=$(echo $v_org_all | sed 's/\"//g' | cut -d " " -f 1)
+
+
+    v_hostname=$(echo "$v_info" | grep "hostname" | cut -d ":" -f 2 | tr -d ",")
+    v_city=$(echo "$v_info" |  grep "city" | cut -d ":" -f 2 | tr -d ",")
+    v_region=$(echo "$v_info" | grep "region" | cut -d ":" -f 2 | tr -d ",")
+    v_country=$(echo "$v_info" | grep "country" | cut -d ":" -f 2 | tr -d ",")
+    v_loc=$(echo "$v_info" | grep "loc" | cut -d ":" -f 2 )
+    v_org_all=$(echo "$v_info" | grep "org" | cut -d ":" -f 2 | tr -d "," | sed 's/^[ \t]*//')
+
+    v_lat=$(echo "$v_loc" | sed 's/\"//g' | cut -d "," -f 1 )
+    v_long=$(echo "$v_loc" | sed 's/\"//g' | cut -d "," -f 2 )
+
+    v_org=$(echo "$v_org_all" | sed 's/\"//g' | cut -d " " -f 2-)
+    v_org_asn=$(echo "$v_org_all" | sed 's/\"//g' | cut -d " " -f 1)
+
+    # echo $v_hostname 
+    # echo $v_city
+    # echo $v_region
+    # echo $v_country
+    # echo $v_lat
+    # echo $v_long
+    # echo $v_org
+    # echo $v_org_asn
+
 }
     
-f_check_whois() {
+f_get_whois() {
+    # whois -h rr.ntt.net $1  | buscar o BLOCOIP, MAINTAINER, ASN, SOURCE através do ip
+    v_whois_full="$(whois -h rr.ntt.net $1 | tr -s " ")"  
+    # whois -h rr.ntt.net $1 $MANTAINER | buscar DESCR
+    # whois -h rr.ntt.net -i mnt-by $MANTAINER | buscar o route-set e os members
+    # echo "$v_whois_full"
+    v_route=$(echo "$v_whois_full" | grep "route:" | cut -d ":" -f 2 | sed 's/\s//g')
+    v_origin=$(echo "$v_whois_full" | grep "origin:" | cut -d ":" -f 2 | sed 's/\s//g')
+    # v_org_resp=$(echo "$v_whois_full" | grep "descr:" | cut -d ":" -f 2 | sed 's/\s//g')
+    v_maintainer=$(echo "$v_whois_full" | grep "mnt-by:" | cut -d ":" -f 2 | sed 's/\s//g')
+    v_source=$(echo "$v_whois_full" | grep "source:" | cut -d ":" -f 2 | sed 's/\s//g')
+
+    echo $v_route
+    echo $v_origin
+    # echo $v_org_resp
+    echo $v_maintainer
+    echo $v_source
+
+}
+
+f_get_nc() {
     :
 }
 
