@@ -34,7 +34,7 @@ f_check_target_alive() {
 f_check_ipinfo() {
     :
 }
-
+    
 f_check_whois() {
     :
 }
