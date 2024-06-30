@@ -61,31 +61,34 @@ f_get_ipinfo() {
     v_org=$(echo "$v_org_all" | sed 's/\"//g' | cut -d " " -f 2-)
     v_org_asn=$(echo "$v_org_all" | sed 's/\"//g' | cut -d " " -f 1)
 
-    # echo $v_hostname 
-    # echo $v_city
-    # echo $v_region
-    # echo $v_country
-    # echo $v_lat
-    # echo $v_long
-    # echo $v_org
-    # echo $v_org_asn
+    echo $v_hostname 
+    echo $v_city
+    echo $v_region
+    echo $v_country
+    echo $v_lat
+    echo $v_long
+    echo $v_org
+    echo $v_org_asn
 
 }
     
 f_get_whois() {
     # whois -h rr.ntt.net $1  | buscar o BLOCOIP, MAINTAINER, ASN, SOURCE através do ip
     v_whois_full="$(whois -h rr.ntt.net $1 | tr -s " ")"  
-    # whois -h rr.ntt.net $1 $MANTAINER | buscar DESCR
+
     # whois -h rr.ntt.net -i mnt-by $MANTAINER | buscar o route-set e os members
     # echo "$v_whois_full"
-    v_route=$(echo "$v_whois_full" | grep "route:" | cut -d ":" -f 2 | sed 's/\s//g')
-    v_origin=$(echo "$v_whois_full" | grep "origin:" | cut -d ":" -f 2 | sed 's/\s//g')
+    v_route=$(echo "$v_whois_full" | grep -m 1 "route:" | cut -d ":" -f 2 | sed 's/\s//g')
+    v_origin=$(echo "$v_whois_full" | grep -m 1 "origin:" | cut -d ":" -f 2 | sed 's/\s//g')
     # v_org_resp=$(echo "$v_whois_full" | grep "descr:" | cut -d ":" -f 2 | sed 's/\s//g')
-    v_maintainer=$(echo "$v_whois_full" | grep "mnt-by:" | cut -d ":" -f 2 | sed 's/\s//g')
-    v_source=$(echo "$v_whois_full" | grep "source:" | cut -d ":" -f 2 | sed 's/\s//g')
+    v_maintainer=$(echo "$v_whois_full" | grep -m 1  "mnt-by:" | cut -d ":" -f 2 | sed 's/\s//g')
+    v_source=$(echo "$v_whois_full" | grep -m 1  "source:" | cut -d ":" -f 2 | sed 's/\s//g')
+
+    # whois -h rr.ntt.net $1 $MANTAINER | buscar DESCR
+    v_out_maintainer=$(whois -h rr.ntt.net -i mnt-by $v_maintainer | tr -s " ")
 
     echo $v_route
-    echo $v_origin
+    # echo $v_origin
     # echo $v_org_resp
     echo $v_maintainer
     echo $v_source
@@ -102,16 +105,23 @@ f_get_nc() {
 f_check_arg $1
 f_check_apps
 
+# get
+f_get_ipinfo $v_arg 
+f_get_whois $v_arg
+
+# show
+
+
 # test and return
-v_ping_res=$(f_check_target_alive $v_arg) 
+# v_ping_res=$(f_check_target_alive $v_arg) 
 
 # get info or not reachable
-if [[ $v_ping_res -eq 0 ]];then 
-    f_get_ipinfo $v_arg 
-    f_get_whois $v_arg
-else
-    echo -e "\n$v_arg Unreachable\n"
-fi
+# if [[ $v_ping_res -eq 0 ]];then 
+    # f_get_ipinfo $v_arg 
+    # f_get_whois $v_arg
+# else
+#     echo -e "\n$v_arg Unreachable\n"
+# fi
 
 exit 0
 
